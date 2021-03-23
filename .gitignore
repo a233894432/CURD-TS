@@ -1,11 +1,3 @@
-/doc/node_modules
-/doc/docs/.vitepress/dist
-
-/backend/node_modules
-
-/frontend/angular-ts/node_modules
-
-/frontend/react-ts/node_modules
-
-/frontend/vue-ts/node_modules
-/frontend/vue-ts/dist
+node_modules
+dist
+.DS_Store

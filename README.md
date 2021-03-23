@@ -1,46 +1,67 @@
-# CURD-TS 正在开发中……
-一套基于TS的增删改查系统，前端语言Vue3.0、React、Angular，后端语言node+express，采用了三种数据库MySQL、MongoDB、SQLite编写。  
-A TS based add, delete, modify and query system, the front-end language vue3.0, react, angular, back-end language node + Express, using three kinds of database mysql, mongodb, SQLite  
+# Vue3.0后台管理系统
+### 功能已开发完毕，新需求请提issues  
 
-## 文档地址
-https://xiaoxian521.github.io/zh/standard/
+vue版本代码：https://github.com/xiaoxian521/CURD-TS  
+vue版本在线地址：http://yiming_chang.gitee.io/manages  
+react版本代码：https://github.com/xiaoxian521/CURD-TS/tree/react-ts  
+angular版本代码：https://github.com/xiaoxian521/CURD-TS/tree/angular-ts  
+angular版本在线地址：http://usercxx.gitee.io/ng-gis-map  
+node接口：https://github.com/xiaoxian521/CURD-TS/tree/backend  
+doc文档：https://github.com/xiaoxian521/CURD-TS/tree/doc  
 
-## 结构介绍 
-① sql为数据库存放文件夹  
-② doc为文档编写存放文件夹  
-③ backend为后端项目存放文件夹  
-④ frontend为前端项目存放文件夹  
+github地址：https://github.com/xiaoxian521/CURD-TS  
+gitee地址：https://gitee.com/yiming_chang/CURD-TS  
 
-## Structure introduction 
-① SQL stores the folder for the database  
-② Doc write storage folder for documents  
-③ Backend stores the folder for the back-end project  
-④ Frontend stores the folder for the front-end project  
+## 知识库地址
 
-## 前端对应代码存放目录
-vue => /frontend/vue-ts  
-react => /frontend/react-ts  
-angular => /frontend/angular-ts  
+帮助你获取最新的 API  
+[vue3.0 中文文档地址]: https://vue3js.cn/docs/zh/  
+[element-plus 中文文档地址]: https://element-plus.org/#/zh-CN  
+[composition-Api 中文文档地址]: https://composition-api.vuejs.org/zh/  
+[vue-router-next 文档地址]: https://next.router.vuejs.org/  
+[next.vuex 文档地址]: https://next.vuex.vuejs.org/  
+[vite 源码]: https://github.com/vitejs/vite  
+[vite 文档地址]: https://vitejs.dev/  
+[vite 中文文档地址（非官方版本）]: https://vite-design.surge.sh/guide/chinese-doc.html  
+[vue-i18n-next]: https://vue-i18n-next.intlify.dev/  
+[composition-api-vue-i18n-next]: https://vue-i18n-next.intlify.dev/advanced/composition.html#local-scope  
 
-## Front end corresponding code storage directory
-vue => /frontend/vue-ts  
-react => /frontend/react-ts  
-angular => /frontend/angular-ts  
+## 安装依赖
+
+```
+npm install
+```
+
+## 项目运行
+
+```
+npm run serve
+```
+
+## 项目打包
+
+```
+npm run build
+```
 
 ## 注意点
-① 接口文档使用Swagger  
-② 编写者必须严格遵守项目中tslint编写规则  
-③ 编写者必须严格遵循代码命名语义化、提高代码可读性  
-④ 编写者编写代码完毕必须经过单元测试，保证代码可用性  
-⑤ 编写必须完全使用TypeScript，保证代码严谨性、可维护性  
-⑥ 编写者提交代码发生冲突，必须先解决，在推送，严禁使用git push -f origin 分支  
-⑦ 编写者无须在项目中放置.gitignore文件，如需加入别的git忽略请放在CURD-TS文件夹跟目录的.gitignore文件  
 
-## Attention point
-① Interface documents use swagger  
-② The author must strictly abide by the tslint writing rules in the project  
-③ The author must strictly follow the code naming semantics and improve the readability of the code  
-④ The author must go through the unit test to ensure the usability of the code  
-⑤ Typescript must be used completely to ensure code rigor and maintainability  
-⑥ If the code submitted by the writer conflicts, it must be resolved first. In pushing, GIT push - f origin branch is strictly prohibited  
-⑦ The author does not need to place the. Gitignore file in the project. If you want to add other git ignore, please put it in the curd-ts folder and the. Gitignore file in the directory
+请先全局安装 typescript、ts-node、vite 如安装请忽略
+
+```
+npm install -g typescript
+npm install -g ts-node
+npm install -g create-vite-app
+```
+
+坑位  
+1.  
+path模块线上部署会遇到process is undefined问题  
+解决办法：在源码中开头加入window.process = {}  
+issues：https://github.com/jinder/path/issues/7  
+2.  
+运行项目时控制台报NODE_ENV not found  
+解决办法：删除node_modules和package-lock.json文件，重新npm install  
+3.  
+运行项目会感觉菜单切换比较卡，这个原因是使用route造成的，watch(route)是隐式的{ deep: true }，最好使用watchEffect  
+issues：https://github.com/vuejs/vue-next/issues/2027  
