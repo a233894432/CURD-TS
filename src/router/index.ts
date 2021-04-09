@@ -42,6 +42,15 @@ const routes: Array<RouteRecordRaw> = [
         }
       },
       {
+        path: '/components/map',
+        component: () => import(/* webpackChunkName: "components" */ '../views/components/map/index.vue'),
+        meta: {
+          title: 'map',
+          showLink: false,
+          savedPosition: true
+        }
+      },
+      {
         path: '/components/draggable',
         component: () => import(/* webpackChunkName: "components" */ '../views/components/draggable/index.vue'),
         meta: {
@@ -55,6 +64,15 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import(/* webpackChunkName: "components" */ '../views/components/split-pane/index.vue'),
         meta: {
           title: 'split-pane',
+          showLink: false,
+          savedPosition: true
+        }
+      },
+      {
+        path: '/components/button',
+        component: () => import(/* webpackChunkName: "components" */ '../views/components/button/index.vue'),
+        meta: {
+          title: 'button',
           showLink: false,
           savedPosition: true
         }
@@ -87,6 +105,30 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
       icon: 'el-icon-user',
       title: 'usermanagement',
+      showLink: true,
+      savedPosition: true
+    }
+  },
+  {
+    path: '/editor',
+    name: 'editor',
+    component: Layout,
+    redirect: '/editor/index',
+    children: [
+      {
+        path: '/editor/index',
+        component: () => import(/* webpackChunkName: "user" */ '../views/editor/index.vue'),
+        meta: {
+          // icon: 'el-icon-edit-outline',
+          title: 'editor',
+          showLink: false,
+          savedPosition: true
+        }
+      },
+    ],
+    meta: {
+      icon: 'el-icon-edit-outline',
+      title: 'editor',
       showLink: true,
       savedPosition: true
     }
@@ -178,6 +220,7 @@ const whiteList = ["/login", "/register"]
 
 router.beforeEach((to, _from, next) => {
   NProgress.start()
+  // @ts-ignore
   document.title = to.meta.title // 动态title
   whiteList.indexOf(to.path) !== -1 || storageSession.getItem("info") ? next() : next("/login") // 全部重定向到登录页
 })

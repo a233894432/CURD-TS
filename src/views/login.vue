@@ -10,11 +10,8 @@
 
 <script lang="ts">
 import {
-  ref,
   reactive,
-  onMounted,
   onBeforeMount,
-  getCurrentInstance,
 } from "vue";
 import info, { ContextProps } from "../components/info/index.vue";
 import { getVerify, getLogin } from "../api/user";
@@ -69,7 +66,7 @@ export default {
     };
 
     onBeforeMount(() => {
-      refreshGetVerify();
+      // refreshGetVerify();
     });
 
     return {

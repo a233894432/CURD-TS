@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts">
-import * as pathToRegexp from "path-to-regexp";
+import { pathToRegexp } from "path-to-regexp";
 import { ref, defineComponent, watch, Ref } from "vue";
 import { useRoute, useRouter, RouteLocationMatched } from "vue-router";
 
@@ -60,11 +60,11 @@ export default defineComponent({
       () => getBreadcrumb()
     );
 
-    const pathCompile = (path: string): string | Object => {
-      const { params } = route;
-      var toPath = pathToRegexp.compile(path);
-      return toPath(params);
-    };
+    // const pathCompile = (path: string): string | Object => {
+      // const { params } = route;
+      // var toPath = pathToRegexp.compile(path);
+      // return toPath(params);
+    // };
 
     const handleLink = (item: RouteLocationMatched): any => {
       const { redirect, path } = item;
@@ -72,7 +72,7 @@ export default defineComponent({
         router.push(redirect.toString());
         return;
       }
-      router.push(pathCompile(path));
+      router.push(path);
     };
 
     return { levelList, handleLink };

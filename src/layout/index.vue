@@ -11,6 +11,8 @@
       <div :class="{ 'fixed-header': fixedHeader }">
         <!-- 顶部导航栏 -->
         <navbar />
+        <!-- tabs标签页 -->
+        <tag /> 
       </div>
       <!-- 主体内容 -->
       <app-main />
@@ -21,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import { Navbar, Sidebar, AppMain, setting } from "./components";
+import { Navbar, Sidebar, AppMain, setting, tag } from "./components";
 import {
   ref,
   reactive,
@@ -34,6 +36,7 @@ import {
   onBeforeUnmount,
 } from "vue";
 import { useStore } from "vuex";
+import { useEventListener } from "@vueuse/core";
 interface setInter {
   sidebar: any;
   device: String;
@@ -48,6 +51,7 @@ export default {
     Sidebar,
     AppMain,
     setting,
+    tag
   },
   setup() {
     const store = useStore();
@@ -112,13 +116,9 @@ export default {
     });
 
     onBeforeMount(() => {
-      window.addEventListener("resize", $_resizeHandler);
+      useEventListener("resize", $_resizeHandler);
     });
-
-    onBeforeUnmount(() => {
-      window.removeEventListener("resize", $_resizeHandler);
-    });
-
+    
     return {
       ...toRefs(set),
       handleClickOutside,

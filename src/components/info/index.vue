@@ -110,10 +110,6 @@ export default defineComponent({
       ],
     });
 
-    onBeforeMount(() => {
-      vm = getCurrentInstance(); //获取组件实例
-    });
-
     // 点击登录或注册
     const onBehavior = (evt: Object): void => {
       vm.refs.ruleForm.validate((valid: Boolean) => {
@@ -147,6 +143,10 @@ export default defineComponent({
       });
       router.push("/");
     };
+
+    onBeforeMount(()=>{
+      vm = getCurrentInstance(); //获取组件实例
+    })
 
     return {
       rules,

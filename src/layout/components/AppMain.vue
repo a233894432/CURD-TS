@@ -26,11 +26,11 @@ export default defineComponent({
 
 <style scoped>
 .app-main {
-  min-height: calc(100vh - 50px);
+  min-height: calc(100vh - 70px);
   width: 100%;
+  height: 90vh;
   position: relative;
   overflow-x: hidden;
-  margin: 10px;
 }
 .fixed-header + .app-main {
   padding-top: 50px;
