@@ -1,6 +1,6 @@
 <template>
   <div class="welcome">
-    <el-affix :offset="51">
+    <el-affix>
       <div class="top-content">
         <div class="left-mark">
           <img
@@ -11,49 +11,46 @@
           />
           <span>{{ greetings }}</span>
         </div>
-        <flop v-if="!mobile" />
+        <Flop v-if="!mobile" />
       </div>
     </el-affix>
 
     <!-- 图表 -->
     <el-card class="box-card">
-    <el-skeleton  style="height: 50vh" :rows="8" :loading="loading" animated>
-      <template #default>
+      <el-skeleton style="height: 50vh" :rows="8" :loading="loading" animated>
+        <template #default>
           <div id="brokenLine"></div>
-      </template>
-    </el-skeleton>
+        </template>
+      </el-skeleton>
     </el-card>
-    <!-- <CountTo prefix="$" :startVal="1" :endVal="200" /> -->
   </div>
 </template>
 
 <script lang='ts'>
-import flop from "../components/flop/index.vue";
-import CountTo from "../components/countTo/src/index.vue";
-import { ref, computed, onMounted, inject, nextTick } from "vue";
-import { deviceDetection } from "../utils/deviceDetection";
-import { echartsJson } from "../api/mock";
-import { useEventListener } from "@vueuse/core";
+import Flop from "/@/components/Flop";
+import { ref, computed, onMounted, nextTick } from "vue";
+import { deviceDetection } from "/@/utils/deviceDetection";
+import { useEventListener, tryOnUnmounted, useTimeoutFn } from "@vueuse/core";
+import { echartsJson } from "/@/api/mock";
+import echarts from "/@/plugins/echarts";
 
 let brokenLine: any = null; //折线图实例
 export default {
   name: "welcome",
   components: {
-    flop,
-    CountTo,
+    Flop
   },
   setup() {
     let mobile = ref(deviceDetection());
     let date: Date = new Date();
     let loading = ref(true);
-    let echarts = inject("echarts"); //引入
 
     setTimeout(() => {
       loading.value = !loading.value;
-      nextTick(()=>{
+      nextTick(() => {
         initbrokenLine();
-      })
-    }, 2000);
+      });
+    }, 500);
 
     let greetings = computed(() => {
       if (date.getHours() >= 0 && date.getHours() < 12) {
@@ -65,48 +62,45 @@ export default {
       }
     });
 
-    let initbrokenLine = (): any => {
-      // @ts-ignore
-      brokenLine = echarts.init(document.getElementById("brokenLine"));
+    function initbrokenLine() {
+      const lineRefDom = document.getElementById("brokenLine");
+      if (!lineRefDom) return;
+      brokenLine = echarts.init(lineRefDom);
       brokenLine.clear(); //清除旧画布 重新渲染
 
       echartsJson().then(({ info }) => {
         brokenLine.setOption({
           title: {
             text: "上海 空气质量指数",
-            left: "1%",
+            left: "1%"
           },
           tooltip: {
-            trigger: "axis",
+            trigger: "axis"
           },
           grid: {
             left: "5%",
             right: "15%",
-            bottom: "10%",
+            bottom: "10%"
           },
           xAxis: {
-            data: info.map(function (item) {
+            data: info.map(function(item) {
               return item[0];
-            }),
+            })
           },
           yAxis: {},
           toolbox: {
             right: 10,
             feature: {
-              dataZoom: {
-                yAxisIndex: "none",
-              },
-              restore: {},
-              saveAsImage: {},
-            },
+              saveAsImage: {}
+            }
           },
           dataZoom: [
             {
-              startValue: "2014-06-01",
+              startValue: "2014-06-01"
             },
             {
-              type: "inside",
-            },
+              type: "inside"
+            }
           ],
           visualMap: {
             top: 50,
@@ -115,80 +109,90 @@ export default {
               {
                 gt: 0,
                 lte: 50,
-                color: "#93CE07",
+                color: "#93CE07"
               },
               {
                 gt: 50,
                 lte: 100,
-                color: "#FBDB0F",
+                color: "#FBDB0F"
               },
               {
                 gt: 100,
                 lte: 150,
-                color: "#FC7D02",
+                color: "#FC7D02"
               },
               {
                 gt: 150,
                 lte: 200,
-                color: "#FD0100",
+                color: "#FD0100"
               },
               {
                 gt: 200,
                 lte: 300,
-                color: "#AA069F",
+                color: "#AA069F"
               },
               {
                 gt: 300,
-                color: "#AC3B2A",
-              },
+                color: "#AC3B2A"
+              }
             ],
             outOfRange: {
-              color: "#999",
-            },
+              color: "#999"
+            }
           },
           series: {
             name: "上海 空气质量指数",
             type: "line",
-            data: info.map(function (item) {
+            data: info.map(function(item) {
               return item[1];
             }),
             markLine: {
               silent: true,
               lineStyle: {
-                color: "#333",
+                color: "#333"
               },
               data: [
                 {
-                  yAxis: 50,
+                  yAxis: 50
                 },
                 {
-                  yAxis: 100,
+                  yAxis: 100
                 },
                 {
-                  yAxis: 150,
+                  yAxis: 150
                 },
                 {
-                  yAxis: 200,
+                  yAxis: 200
                 },
                 {
-                  yAxis: 300,
-                },
-              ],
-            },
-          },
+                  yAxis: 300
+                }
+              ]
+            }
+          }
         });
       });
-    };
-
-    const openDepot = ():void => {
-      window.open('https://github.com/xiaoxian521/vue-pure-admin')
     }
 
+    const openDepot = (): void => {
+      window.open("https://github.com/xiaoxian521/vue-pure-admin");
+    };
+
     onMounted(() => {
-      useEventListener("resize", () => {
-        if(!brokenLine) return;
-        brokenLine.resize();
+      nextTick(() => {
+        useEventListener("resize", () => {
+          if (!brokenLine) return;
+          useTimeoutFn(() => {
+            brokenLine.resize();
+          }, 180);
+        });
       });
+    });
+
+    tryOnUnmounted(() => {
+      if (!brokenLine) return;
+      brokenLine.dispose();
+      brokenLine = null;
     });
 
     return {
@@ -197,7 +201,7 @@ export default {
       loading,
       openDepot
     };
-  },
+  }
 };
 </script>
 
@@ -213,6 +217,7 @@ export default {
     height: 120px;
     background: #fff;
     padding: 20px;
+    border-bottom: 0.5px solid rgba($color: #ccc, $alpha: 0.3);
     .left-mark {
       display: flex;
       align-items: center;

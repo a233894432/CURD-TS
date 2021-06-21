@@ -3,16 +3,21 @@
     <div
       v-if="device === 'mobile' && sidebar.opened"
       class="drawer-bg"
-      @click="handleClickOutside"
+      @click="handleClickOutside(false)"
     />
     <!-- 侧边栏 -->
-    <sidebar class="sidebar-container" />
+    <sidebar class="sidebar-container" v-if="!containerHiddenSideBar" />
     <div class="main-container">
       <div :class="{ 'fixed-header': fixedHeader }">
         <!-- 顶部导航栏 -->
-        <navbar />
+        <navbar v-show="!containerHiddenSideBar" />
         <!-- tabs标签页 -->
-        <tag /> 
+        <tag>
+          <i
+            :class="containerHiddenSideBar? 'iconfont team-iconhidden-main-container': 'iconfont team-iconshow-main-container'"
+            @click="onFullScreen"
+          ></i>
+        </tag>
       </div>
       <!-- 主体内容 -->
       <app-main />
@@ -26,17 +31,26 @@
 import { Navbar, Sidebar, AppMain, setting, tag } from "./components";
 import {
   ref,
+  unref,
   reactive,
   computed,
   toRefs,
   watch,
+  nextTick,
   watchEffect,
   onMounted,
   onBeforeMount,
-  onBeforeUnmount,
+  onBeforeUnmount
 } from "vue";
-import { useStore } from "vuex";
-import { useEventListener } from "@vueuse/core";
+import { useAppStoreHook } from "/@/store/modules/app";
+import { useSettingStoreHook } from "/@/store/modules/settings";
+import { useEventListener, useFullscreen } from "@vueuse/core";
+import { toggleClass, removeClass } from "/@/utils/operate";
+let hiddenMainContainer = "hidden-main-container";
+import options from "/@/settings";
+import { useRouter, useRoute } from "vue-router";
+import { storageLocal } from "/@/utils/storage";
+
 interface setInter {
   sidebar: any;
   device: String;
@@ -54,21 +68,27 @@ export default {
     tag
   },
   setup() {
-    const store = useStore();
+    const pureApp = useAppStoreHook();
+    const pureSetting = useSettingStoreHook();
+
+    const router = useRouter();
+    const route = useRoute();
 
     const WIDTH = ref(992);
 
+    let containerHiddenSideBar = ref(options.hiddenSideBar);
+
     const set: setInter = reactive({
       sidebar: computed(() => {
-        return store.state.app.sidebar;
+        return pureApp.sidebar;
       }),
 
       device: computed(() => {
-        return store.state.app.device;
+        return pureApp.device;
       }),
 
       fixedHeader: computed(() => {
-        return store.state.settings.fixedHeader;
+        return pureSetting.fixedHeader;
       }),
 
       classes: computed(() => {
@@ -76,20 +96,20 @@ export default {
           hideSidebar: !set.sidebar.opened,
           openSidebar: set.sidebar.opened,
           withoutAnimation: set.sidebar.withoutAnimation,
-          mobile: set.device === "mobile",
+          mobile: set.device === "mobile"
         };
-      }),
+      })
     });
+
+    const handleClickOutside = (params: Boolean) => {
+      pureApp.closeSideBar({ withoutAnimation: params });
+    };
 
     watchEffect(() => {
       if (set.device === "mobile" && !set.sidebar.opened) {
-        store.dispatch("app/closeSideBar", { withoutAnimation: false });
+        handleClickOutside(false);
       }
-    })
- 
-    const handleClickOutside = () => {
-      store.dispatch("app/closeSideBar", { withoutAnimation: false });
-    };
+    });
 
     const $_isMobile = () => {
       const rect = document.body.getBoundingClientRect();
@@ -99,31 +119,55 @@ export default {
     const $_resizeHandler = () => {
       if (!document.hidden) {
         const isMobile = $_isMobile();
-        store.dispatch("app/toggleDevice", isMobile ? "mobile" : "desktop");
-
+        pureApp.toggleDevice(isMobile ? "mobile" : "desktop");
         if (isMobile) {
-          store.dispatch("app/closeSideBar", { withoutAnimation: true });
+          handleClickOutside(true);
         }
       }
     };
 
+    function onFullScreen() {
+      if (unref(containerHiddenSideBar)) {
+        containerHiddenSideBar.value = false;
+        toggleClass(
+          false,
+          hiddenMainContainer,
+          document.querySelector(".main-container")
+        );
+      } else {
+        containerHiddenSideBar.value = true;
+        toggleClass(
+          true,
+          hiddenMainContainer,
+          document.querySelector(".main-container")
+        );
+      }
+    }
+
     onMounted(() => {
       const isMobile = $_isMobile();
       if (isMobile) {
-        store.dispatch("app/toggleDevice", "mobile");
-        store.dispatch("app/closeSideBar", { withoutAnimation: true });
+        pureApp.toggleDevice("mobile");
+        handleClickOutside(true);
       }
+      toggleClass(
+        unref(containerHiddenSideBar),
+        hiddenMainContainer,
+        document.querySelector(".main-container")
+      );
     });
 
     onBeforeMount(() => {
       useEventListener("resize", $_resizeHandler);
     });
-    
+
     return {
       ...toRefs(set),
       handleClickOutside,
+      containerHiddenSideBar,
+      onFullScreen
     };
-  },
+  }
 };
 </script>
 
@@ -172,5 +216,9 @@ $sideBarWidth: 210px;
 
 .mobile .fixed-header {
   width: 100%;
+}
+
+.hidden-main-container {
+  margin-left: 0 !important;
 }
 </style>

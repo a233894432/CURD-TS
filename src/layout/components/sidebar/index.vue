@@ -1,43 +1,58 @@
 <template>
-  <el-scrollbar wrap-class="scrollbar-wrapper">
-    <el-menu
-      :default-active="activeMenu"
-      :collapse="isCollapse"
-      background-color="#304156"
-      text-color="#bfcbd9"
-      :unique-opened="false"
-      active-text-color="#409EFF"
-      :collapse-transition="false"
-      mode="vertical"
-      @select="menuSelect"
-    >
-      <sidebar-item
-        v-for="route in routes"
-        :key="route.path"
-        :item="route"
-        :base-path="route.path"
-      />
-    </el-menu>
-  </el-scrollbar>
+  <div :class="{'has-logo': showLogo}">
+    <Logo v-if="showLogo === '1'" :collapse="isCollapse" />
+    <el-scrollbar wrap-class="scrollbar-wrapper">
+      <el-menu
+        :default-active="activeMenu"
+        :collapse="isCollapse"
+        unique-opened
+        :collapse-transition="false"
+        mode="vertical"
+        @select="menuSelect"
+      >
+        <sidebar-item
+          v-for="route in routeStore.wholeRoutes"
+          :key="route.path"
+          :item="route"
+          :base-path="route.path"
+        />
+      </el-menu>
+    </el-scrollbar>
+  </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from "vue";
+import {
+  computed,
+  defineComponent,
+  ref,
+  unref,
+  nextTick,
+  onBeforeMount
+} from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useStore } from "vuex";
+import { useAppStoreHook } from "/@/store/modules/app";
 import SidebarItem from "./SidebarItem.vue";
 import { algorithm } from "../../../utils/algorithm";
 import { useDynamicRoutesHook } from "../tag/tagsHook";
+import { emitter } from "/@/utils/mitt";
+import Logo from "./Logo.vue";
+import { storageLocal } from "/@/utils/storage";
+import { usePermissionStoreHook } from "/@/store/modules/permission";
 
 export default defineComponent({
   name: "sidebar",
-  components: { SidebarItem },
+  components: { SidebarItem, Logo },
   setup() {
+    const routeStore = usePermissionStoreHook();
+
     const router = useRouter().options.routes;
 
-    const store = useStore();
+    const pureApp = useAppStoreHook();
 
     const route = useRoute();
+
+    const showLogo = ref(storageLocal.getItem("logoVal") || "1");
 
     const activeMenu = computed(() => {
       const { meta, path } = route;
@@ -55,15 +70,34 @@ export default defineComponent({
       if (parentPathIndex > 0) {
         parentPath = indexPath.slice(0, parentPathIndex);
       }
-      dynamicRouteTags(indexPath, parentPath);
+      // 找到当前路由的信息
+      function findCurrentRoute(routes) {
+        return routes.map((item, key) => {
+          if (item.path === indexPath) {
+            dynamicRouteTags(indexPath, parentPath, item);
+          } else {
+            if (item.children) findCurrentRoute(item.children);
+          }
+        });
+        return;
+      }
+      findCurrentRoute(algorithm.increaseIndexes(router));
+      emitter.emit("changLayoutRoute", indexPath);
     };
 
+    onBeforeMount(() => {
+      emitter.on("logoChange", key => {
+        showLogo.value = key;
+      });
+    });
+
     return {
-      routes: computed(() => algorithm.increaseIndexes(router)),
       activeMenu,
-      isCollapse: computed(() => !store.getters.sidebar.opened),
+      isCollapse: computed(() => !pureApp.getSidebarStatus),
       menuSelect,
+      showLogo,
+      routeStore
     };
-  },
+  }
 });
 </script>

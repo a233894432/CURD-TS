@@ -1,28 +1,38 @@
 <template>
   <div class="navbar">
-    <hamburger
-      :is-active="sidebar.opened"
+    <Hamburger
+      :is-active="pureApp.sidebar.opened"
       class="hamburger-container"
       @toggleClick="toggleSideBar"
     />
 
-    <breadcrumb class="breadcrumb-container" />
+    <Breadcrumb class="breadcrumb-container" />
 
     <div class="right-menu">
-      <screenfull />
-      <div class="inter" :title="langs ? '中文' : '英文'" @click="toggleLang">
+      <!-- 全屏 -->
+      <screenfull v-show="!deviceDetection()" />
+      <!-- 国际化 -->
+      <div
+        v-show="!deviceDetection()"
+        class="inter"
+        :title="langs ? '中文' : 'English'"
+        @click="toggleLang"
+      >
         <img :src="langs ? ch : en" />
       </div>
-      <el-dropdown>
+      <i class="el-icon-setting hsset" :title="$t('message.hssystemSet')" @click="onPanel"></i>
+      <!-- 退出登陆 -->
+      <el-dropdown trigger="click">
         <span class="el-dropdown-link">
           <img :src="favicon" />
           <p>{{ usename }}</p>
         </span>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item icon="el-icon-switch-button" @click="logout">
-              {{ $t("LoginOut") }}
-            </el-dropdown-item>
+            <el-dropdown-item
+              icon="el-icon-switch-button"
+              @click="logout"
+            >{{ $t("message.hsLoginOut") }}</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -31,46 +41,76 @@
 </template>
 
 <script lang="ts">
-import { ref, reactive, defineComponent, onMounted, nextTick } from "vue";
-import Breadcrumb from "../../components/breadCrumb/index.vue";
-import Hamburger from "../../components/hamBurger/index.vue";
+import { ref, defineComponent, onMounted, unref, watch } from "vue";
+import Breadcrumb from "/@/components/BreadCrumb";
+import Hamburger from "/@/components/HamBurger";
 import screenfull from "../components/screenfull/index.vue";
-import { useMapGetters } from "../store";
-import { useRoute, useRouter } from "vue-router";
-import { mapGetters, useStore } from "vuex";
-import { storageSession } from "../../utils/storage";
-import { useI18n } from "vue-i18n";
+import { useRouter, useRoute } from "vue-router";
+import { useAppStoreHook } from "/@/store/modules/app";
+import { mapGetters } from "pinia";
+import { storageSession } from "/@/utils/storage";
 import ch from "/@/assets/ch.png";
 import en from "/@/assets/en.png";
 import favicon from "/favicon.ico";
+import { emitter } from "/@/utils/mitt";
+import { deviceDetection } from "/@/utils/deviceDetection";
+import { useI18n } from "vue-i18n";
+
+import ElementLocale from "element-plus/lib/locale";
+import enLocale from "element-plus/lib/locale/lang/en";
+import zhLocale from "element-plus/lib/locale/lang/zh-cn";
+
 export default defineComponent({
   name: "Navbar",
   components: {
     Breadcrumb,
     Hamburger,
-    screenfull,
+    screenfull
   },
   setup() {
     let langs = ref(true);
 
-    const store = useStore();
+    const pureApp = useAppStoreHook();
     const router = useRouter();
+    const route = useRoute();
 
-    let usename = storageSession.getItem("info").username;
+    let usename = storageSession.getItem("info")?.username;
 
-    const { locale } = useI18n();
+    const { locale, t } = useI18n();
 
     // 国际化语言切换
     const toggleLang = (): void => {
       langs.value = !langs.value;
-      langs.value ? (locale.value = "ch") : (locale.value = "en");
+      if (langs.value) {
+        locale.value = "zh";
+        ElementLocale.use(zhLocale);
+      } else {
+        locale.value = "en";
+        ElementLocale.use(enLocale);
+      }
     };
+
+    watch(
+      () => langs.value,
+      val => {
+        //@ts-ignore
+        document.title = t(unref(route.meta.title)); // 动态title
+      }
+    );
 
     // 退出登录
     const logout = (): void => {
       storageSession.removeItem("info");
       router.push("/login");
     };
+
+    function onPanel() {
+      emitter.emit("openPanel");
+    }
+
+    function toggleSideBar() {
+      pureApp.toggleSideBar();
+    }
 
     onMounted(() => {
       document
@@ -82,28 +122,29 @@ export default defineComponent({
     });
 
     return {
-      // @ts-ignore
-      ...useMapGetters(["sidebar"]),
-      toggleSideBar() {
-        store.dispatch("app/toggleSideBar");
-      },
+      pureApp,
+      toggleSideBar,
       langs,
       usename,
       toggleLang,
       logout,
       ch,
       en,
-      favicon
+      favicon,
+      onPanel,
+      deviceDetection,
+      locale,
+      t
     };
-  },
+  }
 });
 </script>
 
 <style lang="scss" scoped>
 .navbar {
+  width: 100%;
   height: 50px;
   overflow: hidden;
-  position: relative;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
 
@@ -125,10 +166,27 @@ export default defineComponent({
   }
 
   .right-menu {
-    float: right;
+    position: absolute;
+    right: 0;
     display: flex;
     align-items: center;
+    height: 48px;
+    line-height: 48px;
     .inter {
+      width: 40px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      &:hover {
+        cursor: pointer;
+        background: #f0f0f0;
+      }
+      img {
+        width: 25px;
+      }
+    }
+    .hsset {
       width: 40px;
       height: 48px;
       display: flex;
@@ -139,22 +197,16 @@ export default defineComponent({
         cursor: pointer;
         background: #f0f0f0;
       }
-      img {
-        width: 25px;
-      }
     }
     .el-dropdown-link {
-      width: 80px;
-      height: 48px;
+      width: 70px;
       display: flex;
       align-items: center;
       justify-content: space-around;
-      margin-right: 20px;
+      margin-right: 10px;
+      cursor: pointer;
       p {
-        font-size: 13px;
-      }
-      &:hover {
-        background: #f0f0f0;
+        font-size: 14px;
       }
       img {
         width: 22px;

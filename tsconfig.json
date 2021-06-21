@@ -9,37 +9,34 @@
     "experimentalDecorators": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
     "baseUrl": ".",
     "allowJs": true,
     "resolveJsonModule": true, // 包含导入的模块。json的扩展
-    "lib": [
-      "dom",
-      "esnext"
-    ],
+    "lib": ["dom", "esnext"],
     "incremental": true,
     "paths": {
-      "/@/*": [
-        "src/*"
-      ]
+      "/@/*": ["src/*"],
+      "/#/*": ["types/*"]
     },
-    "types": ["node"],
-    "typeRoots": [
-      "node_modules/@types"
-    ],
+    "types": ["node", "vite/client"],
+    "typeRoots": ["./node_modules/@types/", "./types"]
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
     "tests/**/*.ts",
-    "src/utils/path.js"    
+    "src/utils/path.js",
+    "types/**/*.d.ts",
+    "types/**/*.ts",
+    "types/global.d.ts",
+    "types/shims-tsx.d.ts",
+    "types/shims-vue.d.ts",
+    "mock/asyncRoutes.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.js"
-  ],
+  "exclude": ["node_modules", "dist", "**/*.js"]
 }

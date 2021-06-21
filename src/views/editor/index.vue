@@ -44,6 +44,10 @@ export default {
 
 <style lang="scss" scoped>
 :deep(.w-e-text-container) {
+  z-index: 99 !important;
+}
+:deep(.w-e-toolbar) {
   z-index: 999 !important;
+  position: static;
 }
 </style>
